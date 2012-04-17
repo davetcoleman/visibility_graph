@@ -1,0 +1,8 @@
+Visibility Graph
+A O(n^2 log n) implementation of constructing a visibility graph
+
+by Dave Coleman <davetcoleman@gmail.com>
+A project for Advanced Algorithms at CU Boulder
+
+-------------
+
