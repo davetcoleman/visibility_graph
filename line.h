@@ -1,23 +1,22 @@
-#include "point.h"
+#ifndef LINE_H_INCLUDED
+#define LINE_H_INCLUDED
 
-using namespace std;
+#include <iostream>
+#include "point.h"
 
 class Line
 {
  public:
 	Point a;
     Point b;
-	Line(){}
-	Line(int _x1, int _y1, int _x2, int _y2)
-	{
-		a.x = _x1;
-		b.x = _x2;
-		a.y = _y1;
-		b.y = _y2;
-	}
-	void print()
-	{
-		cout << "Line: x1: " << a.x << " y1: " << a.y << " x2: " << b.x << " y2: " << b.y << endl;
-	}
+	bool visited; // has the base/sweep line crossed at least one of
+	              // the verticies? or was it init on it?
+	int id; // for removing, comparing, etc
+	double dist; // distance from center
+	
+	Line();
+	Line(int _x1, int _y1, int _x2, int _y2);
+	void print();
 };
 
+#endif

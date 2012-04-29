@@ -1,7 +1,7 @@
 /* Skip List
    CSCI 5454 Algorithms
    Dave Coleman | david.t.coleman@colorado.edu
-   
+
    2/2/2012
 
    Implementation of Skip Lists
@@ -10,24 +10,38 @@
 #include <math.h>
 #include <iostream>
 #include <cstdlib>
-#include "node.h"
-//#include "point.h"
+
 using namespace std;
+
+//-------------------------------------------------------------------------------------------
+// Node Structure
+//-------------------------------------------------------------------------------------------
+struct node{
+	double value;
+	node *below; // node below in tower
+	node *next; // next node in skip list
+	int level; // level of this current node
+	int height; // full number of levels in tower
+};
+	
+//-------------------------------------------------------------------------------------------
+// Prototypes
+//-------------------------------------------------------------------------------------------
+
 
 //-------------------------------------------------------------------------------------------
 // Skip List Class
 //-------------------------------------------------------------------------------------------
-template <class T>
 class skiplist{
    	// used for testing
- public:
+public:
 	double find_op;
 	double add_op;
     double remove_op;
 	int maxLevel;
 	
- private:
-	node<T> *root;
+private:
+	node *root;
 
 	//-------------------------------------------------------------------------------------------
 	// Get Random Level
@@ -56,7 +70,7 @@ class skiplist{
 	//-------------------------------------------------------------------------------------------
 	// Create New Node
 	//-------------------------------------------------------------------------------------------	
-	node<T>* createNode(double value, int level, int height, T data)
+	node* createNode(double value, int level, int height)
 	{
 		// Check if we are below level 0
 		if(level < 0)
@@ -65,18 +79,17 @@ class skiplist{
 		}
 		else // make a new node below
 		{
-			node<T> *newNode = new node<T>();			
+			node *newNode = new node();			
 			(*newNode).value = value;
 			(*newNode).level = level;
 			(*newNode).next = NULL;
-			(*newNode).below = createNode(value, level - 1, height, data);
+			(*newNode).below = createNode(value, level - 1, height);
 			(*newNode).height = height;
-			(*newNode).data = data;
 			return newNode;
 		}
 	}	
 	
- public:
+public:
 
 	// Constructor:
 	skiplist()
@@ -94,35 +107,29 @@ class skiplist{
 	//-------------------------------------------------------------------------------------------
 	// ADD
 	//-------------------------------------------------------------------------------------------
-	void add(double x, T data)
+	void add(double x)
 	{
-		//cout << "ADD: ";
-		//data.print();
-		
 		// Special Cases -------------------------------------------------------------------
 
 		if(!root) // no root has been established yet
 		{
-			root = createNode(x, 0, 0, data);
+			root = createNode(x, 0, 0);
 			return;
 		}
 
 		if( (*root).value > x ) // new value goes before root
 		{
-			double temp_x = root->value;
-			T temp_data = root->data;
-			node<T> *n = root;
+			double temp_x = (*root).value;
+			node *n = root;
 
 			for(int l = maxLevel; l >= 0; --l)
 			{
 				add_op += 1;
 				// change the root to the new value
-				n->value = x;
-				n->data = data;
-				n = n->below;
+				(*n).value = x;
+				n = (*n).below;
 			}
 			x = temp_x; // now we can resume regular insert operation with old root value
-			data = temp_data;
 		}
 
 		// Regular insert after root -------------------------------------------------------
@@ -134,20 +141,21 @@ class skiplist{
 		if(level > maxLevel)
 		{
 			maxLevel ++;
-			node<T> *newRoot = new node<T>();
-			newRoot->value = root->value;
-			newRoot->data = root->data;
-			newRoot->next = NULL;
-			newRoot->below = root;
-			newRoot->level = maxLevel;
+			node *newRoot = new node();
+			(*newRoot).value = (*root).value;
+			(*newRoot).next = NULL;
+			(*newRoot).below = root;
+			(*newRoot).level = maxLevel;
 			root = newRoot;
 		}
 
 		// Create the new node
-		node<T> *newNode = createNode(x, level, level, data);
+		node *newNode = createNode(x, level, level);
 					
 		// Now add the node to the list
-		node<T> *i = root; 
+		bool found = false;
+		node *i = root; 
+		node *prevNode = NULL; // used for inserting between two nodes
 
 		// Loop down through all levels
 		for(int l = maxLevel; l >= 0; --l)
@@ -176,15 +184,14 @@ class skiplist{
 
 			// Always move the i node pointer one level down:
 			i = (*i).below;			
-		}
-
+		}	
 	}
 	//-------------------------------------------------------------------------------------------
-	// Find
+	// FIND
 	//-------------------------------------------------------------------------------------------
 	bool find(double x)
 	{
-		node<T> *i = root;
+		node *i = root;
 
 		// Special case: skip list is empty
 		if( !root )
@@ -217,7 +224,7 @@ class skiplist{
 				i = (*i).next;
 			}
 
-			// Always move the i node<T> pointer one level down:
+			// Always move the i node pointer one level down:
 			i = (*i).below;			
 		}	
 
@@ -225,14 +232,13 @@ class skiplist{
 	}
 	//-------------------------------------------------------------------------------------------
 	// REMOVE
-	// the id is to confirm the correct node, just in case x is not unique
 	//-------------------------------------------------------------------------------------------
-	bool remove(double x, int id)
+	bool remove(double x)
 	{
-		node<T> *i = root;
+		node *i = root;
 
 		// Special case: remove root --------------------------------------------------------
-		if( (*root).value == x && root->data.id == id)
+		if( (*root).value == x)
 		{
 			// Get level 0 of root
 			for(int l = (*root).level; l > 0; --l)
@@ -252,15 +258,15 @@ class skiplist{
 			}
 
 			// Change value of root to next node
-			node<T> *n = root;
-			node<T> *nextNode = (*i).next;
+			double root_x = (*root).value;
+			node *n = root;
+			node *nextNode = (*i).next;
 
 			for(int l = maxLevel; l >= 0; --l)
 			{
 				remove_op += 1;
 				// change the root to the new value
-				n->value = nextNode->value;
-				n->data = nextNode->data;
+				(*n).value = (*nextNode).value;
 
 				// update next pointer if the next next exists
 				if( (*n).next )
@@ -285,7 +291,7 @@ class skiplist{
 			while( (*i).next != NULL )
 			{
 				remove_op += 1;
-			    if( i->next->value == x && i->next->data.id == id ) // remove this one, confirmed by id
+			    if( (* (*i).next ).value == x ) // remove this one
 				{
 					found = true;
 					
@@ -300,7 +306,7 @@ class skiplist{
 					}
 					break;
 				}
-				else if( i->next->value > x ) // x is not found on this level
+				else if( (* (*i).next ).value > x ) // x is not found on this level
 				{
 					break;
 				}
@@ -313,101 +319,30 @@ class skiplist{
 		}	
 
    		return found;
-	}	
-	//-------------------------------------------------------------------------------------------
-	// POP FROM FRONT
-	//-------------------------------------------------------------------------------------------
-	T pop()
-	{
-		node<T> *i = root;
-
-		// Store the first item on the list that we want to later return
-		T result = root->data;
-		/*
-		  cout << "POP WITH VALUE: " << root->value << " - ";
-		  result.print();
-		  cout << endl;
-		*/
-		
-		// Check if skip list is empty
-		if( !root )
-		{
-			cout << "An error has occured: skip list is empty";
-			exit(1);
-		}
-
-		// Get level 0 of root
-		for(int l = (*root).level; l > 0; --l)
-		{
-			remove_op += 1;
-			i = (*i).below;
-		}
-
-		// Check if there are any more nodes
-		if( !(*i).next ) // the skip list is empty
-		{
-			root = NULL;
-			maxLevel = 0;
-					
-			return result;
-		}
-
-		// Change value of root to next node
-		node<T> *n = root;
-		node<T> *nextNode = i->next;
-
-		for(int l = maxLevel; l >= 0; --l)
-		{
-			remove_op += 1;
-			// change the root to the new value
-			n->value = nextNode->value;
-			n->data = nextNode->data;
-			
-			// update next pointer if the next next exists
-			if( n->next )
-			{
-				n->next = n->next->next;					
-			}
-
-			// Move down to next level				
-			n = n->below;
-
-		}
-
-		return result;
-	}
-	//-------------------------------------------------------------------------------------------
-	// Is Root
-	//-------------------------------------------------------------------------------------------
-	bool isRoot(int id)
-	{
-	    return (root->data.id == id);
 	}
 	//-------------------------------------------------------------------------------------------
 	// PRINT ALL
 	//-------------------------------------------------------------------------------------------
 	void printAll()
 	{
-		std::cout << std::endl << "LIST -----------------" << std::endl;
+		cout << endl << "LIST -----------------" << endl;
 
 		// Special case: skiplist is empty
 		if( !root )
 		{
-			std::cout << "----------------------" << std::endl;
+			cout << "----------------------" << endl;
 			return;
 		}
 
-		node<T> i = *root;
+		node i = *root;
 		
 		// Get level 0 of root
 		for(int l = (*root).level; l > 0; --l)
 		{
-			//cout << "Level " << l << " - ";
-			//i.data.print();
-			//cout << endl;
+			//cout << "Level " << l << endl;
 			i = *(i.below);
 		}
-		//std::cout << "we are on level " << i.level << std::endl;
+		//cout << "we are on level " << i.level << endl;
 
 		// Hack: update root 0 level with maxLevel count, because we don't update this
 		// when growing root level size
@@ -418,22 +353,20 @@ class skiplist{
 		
 		while(!done)
 		{
-			std::cout << counter;
+			cout << counter;
 			
 			for(int l = i.height; l >= 0; --l)
 			{
-				std::cout << " | ";
+				cout << " | ";
 			}
-			std::cout << " " << i.value << " - ";
-			i.data.print();
-			cout << endl;
+			cout << " " << i.value << endl;
 			
 			counter ++;
 
-			if( i.next )
-			{
-				node<T> *ii = i.next;
-				i = *ii;
+   			if( i.next )
+   			{
+				node *ii = i.next;
+			   	i = *ii;
 			}
 			else
 			{
@@ -441,6 +374,193 @@ class skiplist{
 			}
 		}
 	
-		std::cout << "----------------------" << std::endl;
+		cout << "----------------------" << endl;
 	}
 };
+
+//-------------------------------------------------------------------------------------------
+// MAIN
+//-------------------------------------------------------------------------------------------
+int main(int argc, char ** argv)
+{
+	cout << endl << endl << endl << "Skiplist Implementation by Dave Coleman --------------- " << endl;
+
+	if(true)
+	{
+		cout << endl << "Average atomic operation results" << endl << endl;
+		cout << "Factor Adding Finding Removing" << endl;
+	
+		for(double factor = 1; factor <= 5; factor += .5)
+		{		
+			int n = pow(10,factor); // default input size
+			int t = 120; // number of tests to run
+			int t_run; // number of tests run so far
+
+			// keep a running average of the operations for each type
+			double total_add_op = 0;
+			double total_find_op = 0;
+			double total_remove_op = 0;
+
+			// find a unique random number
+			int random;
+
+			// store the numbers we add
+			double input_list[n];
+
+			// Loop through test runs
+			for(t_run = 1; t_run <= t; ++t_run)
+			{
+				skiplist list;
+
+				for(int i = 0; i < n; ++i)
+				{
+					while(true)
+					{
+						random = rand() % (n*1000);
+						if( !list.find(random) )
+						{
+							input_list[i] = random;
+							list.add(random);
+							break;
+						}
+						//cout << "found non-unique " << endl;
+					}
+				}
+				// reset find_op bc we were using it for inserting unique values
+				list.find_op = 0;
+
+			
+				for(int i = 0; i < n; ++i)
+					list.find(input_list[i]);
+
+				for(int i = 0; i < n; ++i)
+					list.remove(input_list[i]);
+
+				// Average the number of operations
+				total_add_op += list.add_op / n;
+				total_find_op += list.find_op / n;
+				total_remove_op += list.remove_op / n;	   
+			}
+	
+			cout << n << " " << (total_add_op/t_run) << " " << (total_find_op/t_run);
+			cout << " " << (total_remove_op/t_run) << ";" << endl;
+
+		}
+		cout << endl;
+	}
+	else if(false)
+	{
+		skiplist list;
+		int random;
+		int n = 100;
+		for(int i = 0; i < n; ++i)
+		{
+			while(true)
+			{
+				random = rand() % (n*1000);
+				if( !list.find(random) )
+				{
+					//cout << "Adding value " << random << endl;					
+					list.add(random);
+					break;
+				}
+				cout << "found non-unique " << endl;
+			}
+		}
+	
+		list.printAll();
+
+		cout << "Max level is " << list.maxLevel << endl;	
+	}
+	else
+	{	
+		// UNIT TESTING -------------------------------------------------
+		cout << "Unit Testing" << endl;
+		skiplist list;
+		
+		list.add(10);
+		list.add(13);
+		list.add(11);
+		list.add(12);	
+		list.add(9);
+		list.add(14);
+		list.printAll();
+		
+		list.find_op = 0; // reset
+		// Find
+		if(!list.find(9))
+			cout << "ERROR FIND 9" << endl;
+		list.printAll();		
+		cout << "FIND COUNT =" << list.find_op << endl;
+		
+
+		if(!list.find(13))
+			cout << "ERROR FIND 13" << endl;
+		list.printAll();
+
+		cout << endl << "FIND 14" << endl;
+		list.find_op = 0; // reset
+		if(!list.find(14))
+			cout << "ERROR FIND 14" << endl;
+		list.printAll();
+		cout << "FIND COUNT =" << list.find_op << endl;
+
+				
+		if(!list.find(10))
+			cout << "ERROR FIND 10" << endl;
+		list.printAll();
+
+		// Remove
+		if(!list.remove(9))
+			cout << "ERROR REMOVE 9" << endl;
+		if(list.find(9))
+			cout << "ERROR FIND REMOVE 9" << endl;
+
+		list.printAll();
+	
+		if(!list.remove(11))
+			cout << "ERROR REMOVE 11" << endl;	
+		if(list.find(11))
+			cout << "ERROR FIND REMOVE 11" << endl;
+
+		list.printAll();
+		
+		if(!list.remove(14))
+			cout << "ERROR REMOVE 14" << endl;	
+		if(list.find(14))
+			cout << "ERROR FIND REMOVE 14" << endl;
+
+		list.printAll();
+	
+		if(list.remove(1000))
+			cout << "ERROR REMOVE RETURNED FALSE POSITIVE" << endl;
+
+		list.printAll();
+	
+		if(!list.remove(12))
+			cout << "ERROR REMOVE 12" << endl;
+
+		list.printAll();
+	
+		if(!list.remove(13))
+			cout << "ERROR REMOVE 13" << endl;
+
+		list.printAll();
+	
+		if(!list.remove(10))
+			cout << "ERROR REMOVE 10" << endl;
+
+		list.printAll();
+	
+		if(list.find(10))
+			cout << "ERROR FIND REMOVE 10" << endl;	
+	  
+		list.printAll();
+	}
+
+	
+	
+	return EXIT_SUCCESS;
+}
+
+
