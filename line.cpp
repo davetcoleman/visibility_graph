@@ -19,5 +19,8 @@ void Line::print()
 	std::cout << "Line: x1: " << a.x << " y1: " << a.y << " x2: " << b.x
 			  << " y2: " << b.y << std::endl;
 }
-
-
+double Line::value(double theta)
+{
+	return 0; // calculate distance from midpoint at a given theta,
+	          // with resepct to the baseline
+}

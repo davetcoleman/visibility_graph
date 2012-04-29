@@ -2,18 +2,21 @@
 #define POINT_H_INCLUDED
 
 #include <iostream>
+#include "geometry.h"
 
-class Point
+class Point: public Geometry
 {
  public:
 	int x;
 	int y;
 	void* parentLine;
-	int id; // for removing, comparing, etc
+	double angle; // anglular amount from base line
 	
 	Point();
 	Point(int _x1, int _y1);
-	void print();
+
+	virtual void print();
+	virtual double value(double x);
 };
 
 #endif

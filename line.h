@@ -3,20 +3,22 @@
 
 #include <iostream>
 #include "point.h"
+#include "geometry.h"
 
-class Line
+class Line: public Geometry
 {
  public:
 	Point a;
     Point b;
 	bool visited; // has the base/sweep line crossed at least one of
 	              // the verticies? or was it init on it?
-	int id; // for removing, comparing, etc
+//int id; // for removing, comparing, etc
 	double dist; // distance from center
 	
 	Line();
 	Line(int _x1, int _y1, int _x2, int _y2);
-	void print();
+	virtual void print();
+    virtual double value(double x);
 };
 
 #endif
