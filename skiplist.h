@@ -1,7 +1,7 @@
 /* Skip List
    CSCI 5454 Algorithms
    Dave Coleman | david.t.coleman@colorado.edu
-
+   
    2/2/2012
 
    Implementation of Skip Lists
@@ -20,13 +20,13 @@
 template <class T>
 class skiplist{
    	// used for testing
-public:
+ public:
 	double find_op;
 	double add_op;
     double remove_op;
 	int maxLevel;
 	
-private:
+ private:
 	node<T> *root;
 
 	//-------------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ private:
 		}
 	}	
 	
-public:
+ public:
 
 	// Constructor:
 	skiplist()
@@ -96,6 +96,9 @@ public:
 	//-------------------------------------------------------------------------------------------
 	void add(double x, T data)
 	{
+		//cout << "ADD: ";
+		//data.print();
+		
 		// Special Cases -------------------------------------------------------------------
 
 		if(!root) // no root has been established yet
@@ -106,17 +109,20 @@ public:
 
 		if( (*root).value > x ) // new value goes before root
 		{
-			double temp_x = (*root).value;
+			double temp_x = root->value;
+			T temp_data = root->data;
 			node<T> *n = root;
 
 			for(int l = maxLevel; l >= 0; --l)
 			{
 				add_op += 1;
 				// change the root to the new value
-				(*n).value = x;
-				n = (*n).below;
+				n->value = x;
+				n->data = data;
+				n = n->below;
 			}
 			x = temp_x; // now we can resume regular insert operation with old root value
+			data = temp_data;
 		}
 
 		// Regular insert after root -------------------------------------------------------
@@ -129,10 +135,11 @@ public:
 		{
 			maxLevel ++;
 			node<T> *newRoot = new node<T>();
-			(*newRoot).value = (*root).value;
-			(*newRoot).next = NULL;
-			(*newRoot).below = root;
-			(*newRoot).level = maxLevel;
+			newRoot->value = root->value;
+			newRoot->data = root->data;
+			newRoot->next = NULL;
+			newRoot->below = root;
+			newRoot->level = maxLevel;
 			root = newRoot;
 		}
 
@@ -140,9 +147,7 @@ public:
 		node<T> *newNode = createNode(x, level, level, data);
 					
 		// Now add the node to the list
-		//bool found = false;
 		node<T> *i = root; 
-		//node *prevNode = NULL; // used for inserting between two nodes
 
 		// Loop down through all levels
 		for(int l = maxLevel; l >= 0; --l)
@@ -171,7 +176,9 @@ public:
 
 			// Always move the i node pointer one level down:
 			i = (*i).below;			
-		}	
+		}
+
+		//		printAll();
 	}
 	//-------------------------------------------------------------------------------------------
 	// FIND
@@ -218,94 +225,66 @@ public:
 		return false;
 	}
 	//-------------------------------------------------------------------------------------------
-	// REMOVE
+	// POP FROM FRONT
 	//-------------------------------------------------------------------------------------------
-	bool remove(double x)
+	T pop()
 	{
 		node<T> *i = root;
 
-		// Special case: remove root --------------------------------------------------------
-		if( (*root).value == x)
+		// Store the first item on the list that we want to later return
+		T result = root->data;
+		/*
+		cout << "POP WITH VALUE: " << root->value << " - ";
+		result.print();
+		cout << endl;
+		*/
+		
+		// Check if skip list is empty
+		if( !root )
 		{
-			// Get level 0 of root
-			for(int l = (*root).level; l > 0; --l)
-			{
-				remove_op += 1;
-				//std::cout << "Level " << l << std::endl;
-				i = (*i).below;
-			}
-
-			// Check if there are any more nodes
-			if( !(*i).next ) // the skip list is empty
-			{
-				root = NULL;
-				maxLevel = 0;
-					
-				return true;
-			}
-
-			// Change value of root to next node
-			//double root_x = (*root).value;
-			node<T> *n = root;
-			node<T> *nextNode = (*i).next;
-
-			for(int l = maxLevel; l >= 0; --l)
-			{
-				remove_op += 1;
-				// change the root to the new value
-				(*n).value = (*nextNode).value;
-
-				// update next pointer if the next next exists
-				if( (*n).next )
-				{
-					(*n).next = (*(*n).next).next;					
-				}
-
-				// Move down to next level				
-   				n = (*n).below;
-			}
-
-			return true;
+			cout << "An error has occured: skip list is empty";
+			exit(1);
 		}
 
-		// Normal case: remove after root -----------------------------------------------
-		bool found = false;
-		
+		// Get level 0 of root
+		for(int l = (*root).level; l > 0; --l)
+		{
+			remove_op += 1;
+			i = (*i).below;
+		}
+
+		// Check if there are any more nodes
+		if( !(*i).next ) // the skip list is empty
+		{
+			root = NULL;
+			maxLevel = 0;
+					
+			return result;
+		}
+
+		// Change value of root to next node
+		node<T> *n = root;
+		node<T> *nextNode = i->next;
+
 		for(int l = maxLevel; l >= 0; --l)
 		{
 			remove_op += 1;
-			// move forward until we hit a value greater than ours
-			while( (*i).next != NULL )
+			// change the root to the new value
+			n->value = nextNode->value;
+			n->data = nextNode->data;
+			
+			// update next pointer if the next next exists
+			if( n->next )
 			{
-				remove_op += 1;
-			    if( (* (*i).next ).value == x ) // remove this one
-				{
-					found = true;
-					
-					// pass through the pointer if exists
-					if( (*i).next )
-					{
-						(*i).next = (*(*i).next).next;
-					}
-					else
-					{
-						(*i).next = NULL;
-					}
-					break;
-				}
-				else if( (* (*i).next ).value > x ) // x is not found on this level
-				{
-					break;
-				}
-
-				i = (*i).next;
+				n->next = n->next->next;					
 			}
 
-			// Always move the i node pointer one level down:
-			i = (*i).below;
-		}	
+			// Move down to next level				
+			n = n->below;
 
-   		return found;
+		}
+
+		return result;
 	}
 	//-------------------------------------------------------------------------------------------
 	// PRINT ALL
@@ -326,7 +305,9 @@ public:
 		// Get level 0 of root
 		for(int l = (*root).level; l > 0; --l)
 		{
-			//std::cout << "Level " << l << std::endl;
+			cout << "Level " << l << " - ";
+			i.data.print();
+			cout << endl;
 			i = *(i.below);
 		}
 		//std::cout << "we are on level " << i.level << std::endl;
@@ -346,14 +327,16 @@ public:
 			{
 				std::cout << " | ";
 			}
-			std::cout << " " << i.value << std::endl;
+			std::cout << " " << i.value << " - ";
+			i.data.print();
+			cout << endl;
 			
 			counter ++;
 
-   			if( i.next )
-   			{
+			if( i.next )
+			{
 				node<T> *ii = i.next;
-			   	i = *ii;
+				i = *ii;
 			}
 			else
 			{

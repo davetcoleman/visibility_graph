@@ -13,6 +13,38 @@ const unsigned char white[] = { 255 };
 const unsigned char grey[] = { 100 };
 const int screen_size = 500;
 
+
+//-------------------------------------------------------------------------------
+//  Calculate Angle Btw 2 Vectors
+//-------------------------------------------------------------------------------
+double vectorsAngle( int x, int y, int basex, int basey)
+{
+	// Convert input point x & y to be vectors relative to base point
+	int x2 = x - basex;
+	int y2 = y - basey;
+
+	// Hard code scan line to point right:
+	int x1 = 1;
+	int y1 = 0;
+
+	cout << "x1: " << x1 << " - y1: " << y1 << endl;
+	cout << "x2: " << x2 << " - y2: " << y2 << endl;
+
+	double stuff = (  (x1*x2)+(y1*y2)   ) / (  sqrt(x1*x1+y1*y1)  *  sqrt(x2*x2+y2*y2) );
+	cout << "Stuff: " << stuff << endl;
+
+	// Calculate angle:	
+	double result = acos( stuff );
+	cout << "Result: " << result << endl;
+
+	// Now add PI if below middle line:
+	if( y > basey )
+		result = 2*M_PI - result;
+	
+	cout << "Result: " << result*180/M_PI << " degrees" << endl;
+
+	return result;
+}
 //-------------------------------------------------------------------------------
 //  Main procedure
 //-------------------------------------------------------------------------------
@@ -33,7 +65,6 @@ int main()
 		   Line(350,350,350,450),
 		   Line(400,400,450,200),  // far right
 		   Line(200,450,300,450)
-		   //		   Line(250,50,450,100)
 		};
 
 	// Temp:
@@ -41,15 +72,16 @@ int main()
 	int y = x;
 
 	// Datastructures:
-	skiplist <point> angleList;		
+	skiplist <Point> angleList;		
 	skiplist <Line> edgeList;	
 
 	double m; // slope
 	double x_intersect; // y_intersect is simply the loop iterator vertex y
 	double dist; // distance from scan line point to current point
-	double theta1, theta2; // holds the angles for each end point to the current center point
+	double theta1, theta2; // holds the angls for each end point to the current center point
 	Line * s;
-
+	Point p;
+		
 	// Graphics:
 	CImg<unsigned char> img(screen_size,screen_size,1,1,0);
 	img.fill(20);
@@ -61,24 +93,27 @@ int main()
 	{
 		s = &segs[i];
 		
-		img.draw_line(s->a.x, s->a.y, s->b.x, s->b.y, white);
+		img.draw_line(s->a.x, s->a.y, s->b.x, s->b.y, white);                    
 		img.draw_circle(s->a.x, s->a.y, 2, white);
 		img.draw_circle(s->b.x, s->b.y, 2, white);		
 
 		// Calculate the angle from center line:
-		theta1 = atan2( abs( y - s->a.y ), abs( x - s->a.x ) );
-		theta2 = atan2( abs( y - s->b.y ), abs( x - s->b.x ) );
-		
-		//cout << i << " - T1: " << theta1 << " - T2: " << theta2 << endl;
-		//cout << i << ": " << s->a.x << ", " << s->a.y << ", " << s->b.x << ", " << s->b.y << endl;
+		//theta1 = atan2( abs( y - s->a.y ), abs( x - s->a.x ) );
+		//theta2 = atan2( abs( y - s->b.y ), abs( x - s->b.x ) );
+		theta1 = vectorsAngle( s->a.x, s->a.y, x, y );
+		theta2 = vectorsAngle( s->b.x, s->b.y, x, y );
+						
+		cout << i << " - T1: " << theta1 << " - T2: " << theta2 << endl;
+		cout << i << ": " << s->a.x << ", " << s->a.y << ", " << s->b.x << ", " << s->b.y << endl;
 		
 		// Sort the verticies:
 		angleList.add(theta1, s->a);
-		angleList.add(theta2, s->b);			
+		angleList.add(theta2, s->b);
+		cout << endl;
 	}
 
 	// Test SkipList
-	//angleList.printAll();
+	angleList.printAll();
 
 	// Draw sweeper:
 	img.draw_circle(screen_size / 2, screen_size / 2, 4, grey);
@@ -103,17 +138,36 @@ int main()
 			
 			// It does intersect
 			edgeList.add( dist, (*s) );
+			img.draw_line(s->a.x, s->a.y, s->b.x, s->b.y, grey);
 		}
 	}
 
 	edgeList.printAll();
-		
-	// Sweep
+
+	CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen
 	
+	// Sweep
+	for(int i = 0; i < 4; ++i)
+	{
+		// take the first vertex in angular order and decide what to do with it
+		p = angleList.pop();
+		p.print();
+		
+		
+
+
+
+
+
+		img.draw_circle(p.x, p.y, 7, grey);		
+		disp.display(img);
+		//usleep(250*1000);
+		sleep(1);
+	}
 	
 	// Show window until user input:
 	//disp.display(img);
-	CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen	
+
 	while (!disp.is_closed()) {
 		if (disp.is_keyESC() )
 			break;

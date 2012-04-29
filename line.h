@@ -5,8 +5,8 @@ using namespace std;
 class Line
 {
  public:
-	point a;
-	point b;
+	Point a;
+    Point b;
 	Line(){}
 	Line(int _x1, int _y1, int _x2, int _y2)
 	{
@@ -20,3 +20,4 @@ class Line
 		cout << "Line: x1: " << a.x << " y1: " << a.y << " x2: " << b.x << " y2: " << b.y << endl;
 	}
 };
+
