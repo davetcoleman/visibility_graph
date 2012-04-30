@@ -21,9 +21,12 @@ Line::Line(int _x1, int _y1, int _x2, int _y2)
 	
 	// Change ID
 	static int id_counter = 0;
-	visited = false;
 	id = id_counter++;
-
+	
+	// Keep track of its visited history
+	visited = false;
+	visitedStartPoint = false;
+	
 	//	std::cout << "LINE" << std::endl;	
 	updateCalcs();
 

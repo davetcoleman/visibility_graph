@@ -11,8 +11,10 @@ class Line: public Geometry
  public:
 	Point * a;
     Point * b;
-	bool visited; // has the base/sweep line crossed at least one of
-	              // the verticies? or was it init on it?
+	bool visitedStartPoint; // has the base/sweep line crossed at least one of
+	              // the verticies? 
+	bool visited;  // has the sweep line been on the line (as in, maybe it was init on it)
+	
 	int id;
 	double dist; // distance from center
 	double theta_cache; // used for deciding if the dist cache needs to be refreshed
