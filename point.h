@@ -10,6 +10,7 @@ class Point: public Geometry
 	int x;
 	int y;
 	void* parentLine;
+	int id; // for removing, comparing, etc
 	double angle; // anglular amount from base line
 	
 	Point();

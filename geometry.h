@@ -4,7 +4,7 @@
 class Geometry
 {
  public:
-	int id; // for removing, comparing, etc
+	//	int id; // for removing, comparing, etc
 
   	virtual void print() = 0;
   	virtual double value(double x) = 0;

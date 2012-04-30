@@ -12,7 +12,7 @@ class Line: public Geometry
     Point b;
 	bool visited; // has the base/sweep line crossed at least one of
 	              // the verticies? or was it init on it?
-//int id; // for removing, comparing, etc
+	int id;
 	double dist; // distance from center
 	
 	Line();

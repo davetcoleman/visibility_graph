@@ -35,33 +35,34 @@ int main()
 	// Variables ----------------------------------------------------------------
 	
 	// Line segments:
-	int seg = 4;
+	int seg = 3;
 	Line segs[] =
-		{  //Line(10,200,100,215),
-		   //Line(50,50,50,100),
-		   Line(280,300,310,220), // first
-		   Line(450,150,280,330), // second
-		   Line(400,150,400,190), // third, later		   
-		   //Line(350,350,350,450),
-		   Line(400,400,450,200),  // far right
-		   //Line(200,450,300,450)
+		{  
+			//			Line(280,300,330,120), // first
+			Line(450,150,280,330), // second
+			Line(400,150,400,190), // third, later		   
+			Line(400,400,450,200), // far right
+			//Line(350,350,350,450),
+			//Line(10,200,100,215),
+			//Line(50,50,50,100),
+			//Line(200,450,300,450)
 		};
 	
 	// Temp:
 	int x = screen_size / 2;
 	int y = x;
-	Point center(x,y);
+	Point * center = new Point(x,y);
 
 	// Datastructures:
-	skiplist <Point> angleList;		
-	skiplist <Line> edgeList;	
+	skiplist <Point*> angleList;		
+	skiplist <Line*> edgeList;	
 
 	double m; // slope
 	double x_intersect; // y_intersect is simply the loop iterator vertex y
 	double dist; // distance from scan line point to current point
 	double theta1, theta2; // holds the angls for each end point to the current center point
 	Line * l;
-	Point p;
+	Point * p;
 		
 	// Graphics:
 	CImg<unsigned char> img(screen_size,screen_size,1,3,20);
@@ -76,7 +77,7 @@ int main()
 		// Add pointers to all points back to parent line
 		l->a.parentLine = l;
 		l->b.parentLine = l;
-		
+
 		img.draw_line(l->a.x, l->a.y, l->b.x, l->b.y, WHITE);                    
 		img.draw_circle(l->a.x, l->a.y, 2, WHITE);
 		img.draw_circle(l->b.x, l->b.y, 2, WHITE);		
@@ -87,16 +88,17 @@ int main()
 		theta1 = vectorsAngle( l->a.x, l->a.y, x, y );
 		theta2 = vectorsAngle( l->b.x, l->b.y, x, y );
 						
-		cout << i << " - T1: " << theta1 << " - T2: " << theta2 << endl;
-		cout << i << ": " << l->a.x << ", " << l->a.y << ", " << l->b.x << ", " << l->b.y << endl;
+		//cout << i << " - T1: " << theta1 << " - T2: " << theta2 << endl;
+		//cout << i << ": " << l->a.x << ", " << l->a.y << ", " << l->b.x << ", " << l->b.y << endl;
 		
 		// Sort the verticies:
-		angleList.add(theta1, l->a);
-		angleList.add(theta2, l->b);
+		angleList.add(theta1, &l->a);
+		angleList.add(theta2, &l->b);
 		cout << endl;
 	}
 
 	// Test SkipList
+	cout << "Angle List - points ordered CC from base line";
 	angleList.printAll();
 
 	// Draw sweeper:
@@ -108,7 +110,7 @@ int main()
 	{
 		l = &segs[i];
 		
-		//l->print();
+		l->print();
 		
 		// Check each line and see if it crosses scan line
 		// Assume scan line is horizontal and to the right
@@ -124,13 +126,13 @@ int main()
 			l->dist = dist;
 			
 			// It does intersect
-			edgeList.add( dist, (*l) );
+			edgeList.add( dist, l );
 
 			// Mark as opened
 			l->visited = true;
 			
 			// Visualize:
-			img.draw_line(l->a.x, l->a.y, l->b.x, l->b.y, GREY);
+			img.draw_line(l->a.x, l->a.y, l->b.x, l->b.y, GREEN);
 		}
 	}
 
@@ -140,24 +142,30 @@ int main()
 	CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen
 	
 	// Sweep
-	for(int i = 0; i < 5; ++i)
+	cout << endl << endl << endl << "BEGIN SWEEP ----------------------------------------------- " << endl << endl;
+	sleep(1);
+	for(int i = 0; i < 4; ++i)
 		//for(int i = 0; i < 2*seg; ++i)
 	{
 		// take the first vertex in angular order
 		p = angleList.pop();
-		cout << "Sweep at "; p.print();
+		cout << "Sweep at "; p->print();
 		
 		// decide what to do with it
-		l = (Line*)p.parentLine; // cast it
-
+		l = (Line*)p->parentLine; // cast it
 		cout << "\t"; l->print();
+
+		//debug
+		cout << "Edge List:";
+		edgeList.printAll();
+		cout << endl;
 		
 		if( l->visited ) // remove it from edgeList
 		{
 			// check if its first in the edge list. if it is, its VISIBLE
 			if( edgeList.isRoot( l->id ) )
 			{
-				img.draw_line( center.x, center.y, p.x, p.y, BLUE );
+				img.draw_line( center->x, center->y, p->x, p->y, BLUE );
 			}
 			
 			// remove
@@ -170,19 +178,20 @@ int main()
 			l->visited = true; // mark it
 
 			// insert
-			dist = distance( &p, &center );
-			edgeList.add( dist, (*l) );
+			dist = distance( p, center );
+			cout << "New distance = " << dist << endl;
+			edgeList.add( dist, l );
 
 			// check if its first in the edge list. if it is, its VISIBLE
 			if( edgeList.isRoot( l->id ) )
 			{
-				img.draw_line( center.x, center.y, p.x, p.y, BLUE );
+				img.draw_line( center->x, center->y, p->x, p->y, BLUE );
 			}
 			
-			img.draw_line(l->a.x, l->a.y, l->b.x, l->b.y, GREY);
+			img.draw_line(l->a.x, l->a.y, l->b.x, l->b.y, GREEN);
 		}
 
-		img.draw_circle(p.x, p.y, 7, GREY);		
+		img.draw_circle(p->x, p->y, 7, GREY);		
 		disp.display(img);
 		
 		//usleep(250*1000);
@@ -214,21 +223,21 @@ double vectorsAngle( int x, int y, int basex, int basey)
 	int x1 = 1;
 	int y1 = 0;
 
-	cout << "x1: " << x1 << " - y1: " << y1 << endl;
-	cout << "x2: " << x2 << " - y2: " << y2 << endl;
+	//cout << "x1: " << x1 << " - y1: " << y1 << endl;
+	//cout << "x2: " << x2 << " - y2: " << y2 << endl;
 
 	double stuff = (  (x1*x2)+(y1*y2)   ) / (  sqrt(x1*x1+y1*y1)  *  sqrt(x2*x2+y2*y2) );
-	cout << "Stuff: " << stuff << endl;
+	//cout << "Stuff: " << stuff << endl;
 
 	// Calculate angle:	
 	double result = acos( stuff );
-	cout << "Result: " << result << endl;
+	//cout << "Result: " << result << endl;
 
 	// Now add PI if below middle line:
 	if( y > basey )
 		result = 2*M_PI - result;
 	
-	cout << "Result: " << result*180/M_PI << " degrees" << endl;
+	//	cout << "Result: " << result*180/M_PI << " degrees" << endl;
 
 	return result;
 }

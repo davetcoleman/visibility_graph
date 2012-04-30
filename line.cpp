@@ -2,9 +2,8 @@
 
 Line::Line()
 {
-	static int id_counter = 0;
-	visited = false;
-	id = id_counter++;
+	std::cout << "You are calling the function wrong";
+	exit(0);
 }
 Line::Line(int _x1, int _y1, int _x2, int _y2)
 {
@@ -12,7 +11,10 @@ Line::Line(int _x1, int _y1, int _x2, int _y2)
 	b.x = _x2;
 	a.y = _y1;
 	b.y = _y2;
-	Line();
+	id = 55;
+	static int id_counter = 0;
+	visited = false;
+	id = id_counter++;	
 }
 void Line::print()
 {
