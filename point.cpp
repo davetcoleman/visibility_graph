@@ -14,7 +14,7 @@ Point::Point(int _x1, int _y1)
 }
 void Point::print()
 {
-	std::cout << "Point x: " << x << " y: " << y << std::endl;
+	std::cout << "Point x: " << x << " y: " << y << " \t ID: " << id << std::endl;
 }
 double Point::value(double x)
 {

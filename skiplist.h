@@ -426,7 +426,6 @@ class skiplist{
 			}
 			std::cout << " " << i.value << " - ";
 			i.data.print();
-			cout << endl;
 			
 			counter ++;
 

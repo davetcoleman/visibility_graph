@@ -17,7 +17,7 @@ Line::Line(int _x1, int _y1, int _x2, int _y2)
 void Line::print()
 {
 	std::cout << "Line: x1: " << a.x << " y1: " << a.y << " x2: " << b.x
-			  << " y2: " << b.y << std::endl;
+			  << " y2: " << b.y << "\t ID: " << id << std::endl;
 }
 double Line::value(double theta)
 {
