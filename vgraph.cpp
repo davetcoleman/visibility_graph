@@ -33,25 +33,32 @@ int main()
 	cout << endl << endl << "Visibility Graph by Dave Coleman -------------------- " << endl << endl;
 
 	// Variables ----------------------------------------------------------------
+	cout << "here" << endl;
+
+	// Temp:
+	center = new Point( screen_size/2 , screen_size/2);
+	cout << "center_line" << endl;
+	
+	center_line = new Line( center->x, center->y, center->x+1, center->y );	
 	
 	// Line segments:
-	int seg = 3;
+	int seg = 7;
 	Line segs[] =
 		{  
 			//			Line(280,300,330,120), // first
 			Line(450,150,280,330), // second
-			Line(400,150,400,190), // third, later		   
+			Line(400,150,401,190), // third, later		   
 			Line(400,400,450,200), // far right
-			//Line(350,350,350,450),
-			//Line(10,200,100,215),
-			//Line(50,50,50,100),
-			//Line(200,450,300,450)
+			Line(350,350,350,450),
+			Line(10,200,100,215),
+			Line(50,50,50,100),
+			Line(200,450,300,450)
 		};
+	cout << "here" << endl;
 	
-	// Temp:
-	center = new Point( screen_size/2 , screen_size/2);
-	center_line = new Line( center->x, center->y, center->x+1, center->y );
-		
+	
+	cout << "here" << endl;
+
 	// Datastructures:
 	skiplist <Point*> angleList;		
 	skiplist <Line*> edgeList;	
@@ -114,14 +121,14 @@ int main()
 			(l->a->y <= center->y && l->b->y > center->y) )
 		{
 			/*
-			m = (l->b->y - l->a->y)/(l->b->x - l->a->x);
-			x_intersect = abs( ( y - l->a->y + m * l->a->x ) / m );
-			dist = abs(x - x_intersect); // because we know the line is horizontal
-			//cout << "X: " << x << " Xi: " << x_intersect << " m: " << m << endl;
-			cout << "Dist: " << dist << endl << endl;
+			  m = (l->b->y - l->a->y)/(l->b->x - l->a->x);
+			  x_intersect = abs( ( y - l->a->y + m * l->a->x ) / m );
+			  dist = abs(x - x_intersect); // because we know the line is horizontal
+			  //cout << "X: " << x << " Xi: " << x_intersect << " m: " << m << endl;
+			  cout << "Dist: " << dist << endl << endl;
 
-			// Store distance of line from center for later removal reference
-			l->dist = dist;
+			  // Store distance of line from center for later removal reference
+			  l->dist = dist;
 			*/
 			
 			// It does intersect
@@ -145,8 +152,8 @@ int main()
 	// Sweep
 	cout << endl << endl << endl << "BEGIN SWEEP ----------------------------------------------- " << endl << endl;
 	sleep(1);
-	for(int i = 0; i < 4; ++i)
-		//for(int i = 0; i < 2*seg; ++i)
+   	//for(int i = 0; i < 6; ++i)
+	for(int i = 0; i < 2*seg; ++i)
 	{
 		// take the first vertex in angular order
 		p = angleList.pop();
@@ -168,11 +175,12 @@ int main()
 			// check if its first in the edge list. if it is, its VISIBLE
 			if( edgeList.isRoot( l->id ) )
 			{
+				cout << "Drawing Line" << endl;				
 				img.draw_line( center->x, center->y, p->x, p->y, BLUE );
 			}
 			
 			// remove
-			edgeList.remove( l->dist, l->id );
+			edgeList.remove( l->value(), l->id );
 			
 			img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, WHITE);
 		}
@@ -192,6 +200,7 @@ int main()
 			// check if its first in the edge list. if it is, its VISIBLE
 			if( edgeList.isRoot( l->id ) )
 			{
+				cout << "Drawing Line" << endl;
 				img.draw_line( center->x, center->y, p->x, p->y, BLUE );
 			}
 			
@@ -208,7 +217,7 @@ int main()
 		
 		
 		//usleep(250*1000);
-		sleep(3);
+		sleep(1);
 	}
 	
 	// Show window until user input:
