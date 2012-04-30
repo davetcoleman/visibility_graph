@@ -16,10 +16,10 @@ void Point::print()
 {
 	std::cout << "Point x: " << x << " y: " << y << " \t ID: " << id << std::endl;
 }
-double Point::value(double x)
+double Point::value()
 {
 	// this is the angular distance from the base line
 	// for point.cpp, we just cache the initial calculation
-	return angle;
+	return theta;
 }
 

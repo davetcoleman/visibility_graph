@@ -56,7 +56,7 @@ class skiplist{
 	// -----------------------------------------------------------------------------------
 	// Create New Node
 	// -----------------------------------------------------------------------------------	
-	node<T>* createNode(double value, int level, int height, T data)
+	node<T>* createNode( int level, int height, T data)
 	{
 		// Check if we are below level 0
 		if(level < 0)
@@ -66,12 +66,11 @@ class skiplist{
 		else // make a new node below
 		{
 			node<T> *newNode = new node<T>();			
-			(*newNode).value = value;
-			(*newNode).level = level;
-			(*newNode).next = NULL;
-			(*newNode).below = createNode(value, level - 1, height, data);
-			(*newNode).height = height;
-			(*newNode).data = data;
+			newNode->level = level;
+			newNode->next = NULL;
+			newNode->below = createNode( level - 1, height, data);
+			newNode->height = height;
+			newNode->data = data;
 			return newNode;
 		}
 	}	
@@ -94,7 +93,7 @@ class skiplist{
 	// -----------------------------------------------------------------------------------
 	// ADD
 	// -----------------------------------------------------------------------------------
-	void add(double x, T data)
+	void add( T data)
 	{
 		//cout << "ADD: ";
 		//data.print();
@@ -103,13 +102,12 @@ class skiplist{
 
 		if(!root) // no root has been established yet
 		{
-			root = createNode(x, 0, 0, data);
+			root = createNode( 0, 0, data);
 			return;
 		}
 
-		if( (*root).value > x ) // new value goes before root
+		if( root->data->value() > data->value() ) // new value goes before root
 		{
-			double temp_x = root->value;
 			T temp_data = root->data;
 			node<T> *n = root;
 
@@ -117,11 +115,9 @@ class skiplist{
 			{
 				add_op += 1;
 				// change the root to the new value
-				n->value = x;
 				n->data = data;
 				n = n->below;
 			}
-			x = temp_x; // now we can resume regular insert operation with old root value
 			data = temp_data;
 		}
 
@@ -135,7 +131,6 @@ class skiplist{
 		{
 			maxLevel ++;
 			node<T> *newRoot = new node<T>();
-			newRoot->value = root->value;
 			newRoot->data = root->data;
 			newRoot->next = NULL;
 			newRoot->below = root;
@@ -144,7 +139,7 @@ class skiplist{
 		}
 
 		// Create the new node
-		node<T> *newNode = createNode(x, level, level, data);
+		node<T> *newNode = createNode( level, level, data);
 					
 		// Now add the node to the list
 		node<T> *i = root; 
@@ -154,28 +149,28 @@ class skiplist{
 		{
 			add_op += 1;
 			// move forward until we hit a value greater than ours
-			while( (*i).next != NULL )
+			while( i->next != NULL )
 			{
 				add_op += 1;
-				if( (* (*i).next ).value > x ) // insert before i.next
+				if( i->next->data->value() > data->value() ) // insert before i.next
 				{
 					break;
 				}
-				i = (*i).next;
+				i = i->next;
 			}
 
 			// Check if we should add a pointer at this level
 			if( l <= level )
 			{
-				(*newNode).next = (*i).next;
-				(*i).next = newNode;
+				newNode->next = i->next;
+				i->next = newNode;
 				
 				// Now move the new node pointer one level down:
-   				newNode = (*newNode).below;
+   				newNode = newNode->below;
 			}
 
 			// Always move the i node pointer one level down:
-			i = (*i).below;			
+			i = i->below;			
 		}
 
 	}
@@ -193,7 +188,7 @@ class skiplist{
 		}
 
 		// Special case: check root
-		if( (*root).value == x)
+		if( root->data->value() == x)
 		{
 			return true;
 		}
@@ -202,23 +197,23 @@ class skiplist{
 		{
 			find_op += 1;
 			// move forward until we hit a value greater than ours
-			while( (*i).next != NULL )
+			while( i->next != NULL )
 			{
 				find_op += 1;
-				if( (* (*i).next ).value > x ) // x is not found on this level
+				if(  i->next ->data->value() > x ) // x is not found on this level
 				{
 					break;
 				}
-				else if( (* (*i).next ).value == x ) // bingo!
+				else if(  i->next->data->value() == x ) // bingo!
 				{
 					return true;
 				}
 				
-				i = (*i).next;
+				i = i->next;
 			}
 
 			// Always move the i node<T> pointer one level down:
-			i = (*i).below;			
+			i = i->below;			
 		}	
 
 		return false;
@@ -232,18 +227,18 @@ class skiplist{
 		node<T> *i = root;
 
 		// Special case: remove root --------------------------------------------------------
-		if( root->value == x && root->data->id == id)
+		if( root->data->value() == x && root->data->id == id)
 		{
 			// Get level 0 of root
-			for(int l = (*root).level; l > 0; --l)
+			for(int l = root->level; l > 0; --l)
 			{
 				remove_op += 1;
 				//cout << "Level " << l << endl;
-				i = (*i).below;
+				i = i->below;
 			}
 
 			// Check if there are any more nodes
-			if( !(*i).next ) // the skip list is empty
+			if( !i->next ) // the skip list is empty
 			{
 				root = NULL;
 				maxLevel = 0;
@@ -253,23 +248,22 @@ class skiplist{
 
 			// Change value of root to next node
 			node<T> *n = root;
-			node<T> *nextNode = (*i).next;
+			node<T> *nextNode = i->next;
 
 			for(int l = maxLevel; l >= 0; --l)
 			{
 				remove_op += 1;
 				// change the root to the new value
-				n->value = nextNode->value;
 				n->data = nextNode->data;
 
 				// update next pointer if the next next exists
-				if( (*n).next )
+				if( n->next )
 				{
-					(*n).next = (*(*n).next).next;					
+					n->next = n->next->next;					
 				}
 
 				// Move down to next level				
-   				n = (*n).below;
+   				n = n->below;
 			}
 
 			return true;
@@ -282,35 +276,35 @@ class skiplist{
 		{
 			remove_op += 1;
 			// move forward until we hit a value greater than ours
-			while( (*i).next != NULL )
+			while( i->next != NULL )
 			{
 				remove_op += 1;
 				// remove this one, confirmed by id
-			    if( i->next->value == x && i->next->data->id == id ) 
+			    if( i->next->data->value() == x && i->next->data->id == id ) 
 				{
 					found = true;
 					
 					// pass through the pointer if exists
-					if( (*i).next )
+					if( i->next )
 					{
-						(*i).next = (*(*i).next).next;
+						i->next = i->next->next;
 					}
 					else
 					{
-						(*i).next = NULL;
+						i->next = NULL;
 					}
 					break;
 				}
-				else if( i->next->value > x ) // x is not found on this level
+				else if( i->next->data->value() > x ) // x is not found on this level
 				{
 					break;
 				}
 
-				i = (*i).next;
+				i = i->next;
 			}
 
 			// Always move the i node pointer one level down:
-			i = (*i).below;
+			i = i->below;
 		}	
 
    		return found;
@@ -338,14 +332,14 @@ class skiplist{
 		}
 
 		// Get level 0 of root
-		for(int l = (*root).level; l > 0; --l)
+		for(int l = root->level; l > 0; --l)
 		{
 			remove_op += 1;
-			i = (*i).below;
+			i = i->below;
 		}
 
 		// Check if there are any more nodes
-		if( !(*i).next ) // the skip list is empty
+		if( !i->next ) // the skip list is empty
 		{
 			root = NULL;
 			maxLevel = 0;
@@ -361,7 +355,6 @@ class skiplist{
 		{
 			remove_op += 1;
 			// change the root to the new value
-			n->value = nextNode->value;
 			n->data = nextNode->data;
 			
 			// update next pointer if the next next exists
@@ -401,7 +394,7 @@ class skiplist{
 		node<T> i = *root;
 		
 		// Get level 0 of root
-		for(int l = (*root).level; l > 0; --l)
+		for(int l = root->level; l > 0; --l)
 		{
 			//cout << "Level " << l << " - ";
 			//i.data.print();
@@ -425,7 +418,7 @@ class skiplist{
 			{
 				std::cout << " | ";
 			}
-			std::cout << " " << i.value << " - ";
+			std::cout << " " << i.data->value() << " - ";
 			i.data->print();
 			
 			counter ++;

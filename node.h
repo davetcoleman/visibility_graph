@@ -6,7 +6,6 @@
 template <class T>
 class node{
  public:
-	double value;
 	node *below; // node below in tower
 	node *next; // next node in skip list
 	int level; // level of this current node

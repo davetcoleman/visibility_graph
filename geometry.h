@@ -7,7 +7,7 @@ class Geometry
 	//	int id; // for removing, comparing, etc
 
   	virtual void print() = 0;
-  	virtual double value(double x) = 0;
+  	virtual double value() = 0;
 
 };
 
