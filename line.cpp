@@ -7,7 +7,7 @@ using namespace std;
 
 Line::Line()
 {
-	std::cout << "You are calling the function wrong";
+	cout << "You are calling the function wrong";
 	exit(0);
 }
 Line::Line(int x1, int y1, int x2, int y2)
@@ -32,21 +32,21 @@ Line::Line(int x1, int y1, int x2, int y2)
 	visited = false;
 	visitedStartPoint = false;
 	
-	//	std::cout << "LINE" << std::endl;	
+	//	cout << "LINE" << endl;	
 	updateCalcs();
 
-	//	std::cout << "LINE" << std::endl;
+	//	cout << "LINE" << endl;
 	
 	// Used for checking if we need to refresh our distance amount
 	theta_cache = 3*M_PI; // some angle bigger than 2PI, aka INF	
 	//distance();
 	
-	//	std::cout << "END LINE \n" << std::endl;	
+	//	cout << "END LINE \n" << endl;	
 }
 void Line::print()
 {
-	std::cout << "Line: x1: " << a->x << " y1: " << a->y << " x2: " << b->x
-			  << " y2: " << b->y << "\t ID: " << id << std::endl;
+	cout << "Line: x1: " << a->x << " y1: " << a->y << " x2: " << b->x
+			  << " y2: " << b->y << "\t ID: " << id << endl;
 }
 double Line::value()
 {
@@ -55,6 +55,7 @@ double Line::value()
 
 	if( theta_cache != center->theta ) // check if our cached version is still fresh enough
 	{
+		//cout << "Recalculaing distance for line " << id << endl;
 		distance();
 	}
 
@@ -70,34 +71,35 @@ void Line::updateCalcs()
 		//exit(0);
 
 		// Perturb:
-		b->x = b->x + 1;
-		denom = (b->x - a->x);		
+		//		b->x = b->x + 1;
+		denom = 0.000000001; //(b->x - a->x);		
 	}
-	else
-		m = (b->y - a->y)/denom;
+	m = (b->y - a->y)/denom;
 	
-	//	std::cout << m << " M " << std::endl;
+	//	cout << m << " M " << endl;
 	
 	y_intercept = a->y - m*a->x;
-	//	std::cout << y_intercept << " m " << std::endl;
+	//	cout << y_intercept << " m " << endl;
 }
 void Line::distance()
 {
-	//	std::cout << "DISTANCE" << std::endl;
-	
 	// First find the intesection of this line and the sweep line:
 	double xi;
 	double yi;
 	center_intercept( xi, yi );
 
+	//cout << "The intercept is x: " << xi << " y: " << yi << endl;
+	//cout << "M: " << m << " b: " << y_intercept << endl;
+	
 	// Now find the distance between these two lines:
 	dist = sqrt( pow(center->x - xi, 2.0) + pow(center->y - yi,2.0) );
 
+	//cout << "Distance: " << dist << endl << endl;
 	theta_cache = center->theta;
 }	
 
 void Line::center_intercept(double &xi, double &yi)
 {
-	xi = ( y_intercept - center_line->y_intercept ) / ( center_line->m - m );
+	xi = double( y_intercept - center_line->y_intercept ) / double( center_line->m - m );
 	yi = m*xi + y_intercept;
 }
