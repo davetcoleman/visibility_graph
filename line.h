@@ -28,6 +28,7 @@ class Line: public Geometry
 
 	void updateCalcs();
 	void distance();
+	void center_intercept(double &xi, double &yi);
 };
 
 

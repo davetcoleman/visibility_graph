@@ -36,29 +36,62 @@ int main()
 
 	// Graphics:
 	CImg<unsigned char> img(screen_size,screen_size,1,3,20);
-	//img.fill(20);
+	CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen
+
 
 	// Line segments:
-	int seg = 7;
+	int seg = 4;
 	Line segs[] =
 		{  
 			//			Line(280,300,330,120), // first
 			Line(450,150,280,330), // second
 			Line(400,150,401,190), // third, later		   
 			Line(400,400,450,200), // far right
-			Line(350,350,350,450),
-			Line(10,200,100,215),
-			Line(50,50,50,100),
+			//			Line(350,350,350,450),
+			//			Line(10,200,100,215),
+			//			Line(50,50,50,100),
 			Line(200,450,300,450)
 		};
 
-	for(int outer = 0; outer < seg; ++outer)
+	for(int outer = 0; outer < 2*seg; ++outer)
 	{
 		
 		// Move center to new point
 		//		center = new Point( screen_size/2 , screen_size/2);
-		//center_line = new Line( center->x, center->y, center->x+1, center->y );	
-	
+		//center_line = new Line( center->x, center->y, center->x+1, center->y );
+
+		// First or second number on each line?
+		int line_id = outer / 2;
+		bool isPointA;
+		
+		//cout << "LINE ID: " << line_id << endl;
+		if( ! (outer % 2) ) // is even
+		{
+			center = new Point( segs[line_id].a->x, segs[line_id].a->y );
+			isPointA = true;
+		}
+		else // is even
+		{
+			center = new Point( segs[line_id].b->x, segs[line_id].b->y );
+			isPointA = false;
+		}
+
+		// Center Line Calc:
+		center_line = new Line( center->x, center->y, center->x+1, center->y );			
+
+		// Add pointers to all points back to parent line
+		center->parentLine = &segs[line_id];
+		
+		// Draw sweeper:
+		img.draw_line( center->x, center->y, center->x+200, center->y, RED);		
+		img.draw_circle( center->x, center->y, 6, RED);
+
+		cout << "LINE ID " << line_id << " ";
+		if(isPointA)
+			cout << "A" << endl;
+		else 
+			cout << "B" << endl;
+		
 		// Datastructures:
 		skiplist <Point*> angleList;		
 		skiplist <Line*> edgeList;	
@@ -73,102 +106,120 @@ int main()
 		for(int i = 0; i < seg; ++i)
 		{
 			l = &segs[i];
+
 			// Add pointers to all points back to parent line
 			l->a->parentLine = l;
 			l->b->parentLine = l;
 
-			img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, WHITE);                    
-			img.draw_circle(l->a->x, l->a->y, 2, WHITE);
-			img.draw_circle(l->b->x, l->b->y, 2, WHITE);		
+			// Reset visited flags
+			l->visited = false;
+			l->visitedStartPoint = false;
 
-			// Calculate the angle from center line:
-			l->a->theta = vectorsAngle( l->a->x, l->a->y, center->x, center->y );
-			l->b->theta = vectorsAngle( l->b->x, l->b->y, center->x, center->y );
+			img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, WHITE);
+
+			if( !(i == line_id && isPointA) ) // point is not line A
+			{
+				img.draw_circle(l->a->x, l->a->y, 2, WHITE);
+
+				// Calculate the angle from center line:
+				l->a->theta = vectorsAngle( l->a->x, l->a->y, center->x, center->y );
+
+				// Sort the verticies:		
+				angleList.add( l->a);
+
+				cout << "Added A for line " << i << endl;				
+			}
+
+			if( !(i == line_id && isPointA == false) ) // point is not line B
+			{
+				img.draw_circle(l->b->x, l->b->y, 2, WHITE);		
+
+				// Calculate the angle from center line:
+				l->b->theta = vectorsAngle( l->b->x, l->b->y, center->x, center->y );
+
+				// Sort the verticies:		
+				angleList.add( l->b);
+				cout << "Added B for line " << i << endl;
+			}
 						
 			//cout << i << " - T1: " << theta1 << " - T2: " << theta2 << endl;
 			//cout << i << ": " << l->a->x << ", " << l->a->y << ", " << l->b->x << ", " << l->b->y << endl;
 		
-			// Sort the verticies:
-		
-			angleList.add( l->a);
-			angleList.add( l->b);
 			//cout << endl;
 		}
 
+		//		return 0;
 		// Test SkipList
 		cout << "Angle List - points ordered CC from base line";
 		angleList.printAll();
 
-		// Draw sweeper:
-		img.draw_circle(screen_size / 2, screen_size / 2, 4, RED);
-		img.draw_line(screen_size / 2, screen_size / 2, 450, 250, RED);
-
-	
 		// Initialize Edge List Of Lines -----------------------------------------------------
 		for(int i = 0; i < seg; ++i)
 		{
 			l = &segs[i]; // get next line to check
 		
-			//l->print();
-		
 			// Check each line and see if it crosses scan line
-			// Assume scan line is horizontal and to the right
-			if( (l->a->y > center->y && l->b->y <= center->y) ||
-				(l->a->y <= center->y && l->b->y > center->y) )
+			double xi, yi;
+			l->center_intercept( xi, yi ); // these are reference parameters
+
+			// Now we know that xi,yi is on center line.
+			// Next we check if X is between a & b. We know a.x > b.x, thus:
+			if( l->a->x > xi && l->b->x < xi )
 			{
-				/*
-				  m = (l->b->y - l->a->y)/(l->b->x - l->a->x);
-				  x_intersect = abs( ( y - l->a->y + m * l->a->x ) / m );
-				  dist = abs(x - x_intersect); // because we know the line is horizontal
-				  //cout << "X: " << x << " Xi: " << x_intersect << " m: " << m << endl;
-				  cout << "Dist: " << dist << endl << endl;
+				// check that xi > center->x
+				if( xi > center->x )
+				{
+				
+					// It does intersect
+					edgeList.add( l );
 
-				  // Store distance of line from center for later removal reference
-				  l->dist = dist;
-				*/
+					// Mark as opened, somewhere on line
+					l->visited = true;
 			
-				// It does intersect
-				edgeList.add( l );
-
-				// Mark as opened, somewhere on line
-				l->visited = true;
-			
-				// Visualize:
-				img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, GREEN);
+					// Visualize:
+					img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, GREEN);
+				}
 			}
 		}
 
 		cout << "Edge List:";
 		edgeList.printAll();
-
-		CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen
-
-		//return 0;
-	
+		disp.display(img);
+		//break;
+		
 		// Sweep
 		cout << endl << endl << endl << "BEGIN SWEEP ----------------------------------------------- " << endl << endl;
-		sleep(1);
-		//for(int i = 0; i < 6; ++i)
-		for(int i = 0; i < 2*seg; ++i)
+		
+		//sleep(1);
+		usleep(500*1000);
+		
+		for(int i = 0; i < 2*seg - 1; ++i)
 		{
+			cout << "SWEEP VERTEX " << i << endl;
+			
 			// take the first vertex in angular order
 			p = angleList.pop();
 			cout << "Sweep at "; p->print();
 
 			// Update the center_line to the sweep location and update m,b 
 			center_line->b = p;
-
 			center_line->updateCalcs();
+			
 			// Update center point to contain theta between baseline and
 			// current point, so that our line function can cache
 			center->theta = p->theta;
-
 		
 			// decide what to do with it
 			l = (Line*)p->parentLine; // cast it
 			cout << "\t"; l->print();
 
-			if( l->visited  ) // remove it from edgeList
+			// check if the current line is connected to the center point
+			if( l->id == ((Line*)center->parentLine)->id )
+			{
+				// one center's line
+				cout << "ONE CENTER'S LINE!!!" << endl;
+			}
+			else if( l->visited  ) // remove it from edgeList
 			{
 				cout << "remove" << endl;
 
@@ -216,18 +267,23 @@ int main()
 				img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, GREEN);
 			}
 
-			img.draw_circle(p->x, p->y, 7, GREY);		
+			img.draw_circle(p->x, p->y, 5, GREY);		
 			disp.display(img);
 
 			//debug
 			cout << "Edge List:";
 			edgeList.printAll();
+			angleList.printAll();
 			cout << endl << endl;
 		
 		
-			//usleep(250*1000);
+			usleep(500*1000);
 			//sleep(1);
 		}
+		//cout << "breaking" << endl;
+		//break;
+		cout << "\n\n\n --------------- STARTING NEW SWEEP ------------------ \n\n\n";
+		sleep(5);
 	}
 
 	// Show window until user input:

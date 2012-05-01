@@ -10,14 +10,19 @@ Line::Line()
 	std::cout << "You are calling the function wrong";
 	exit(0);
 }
-Line::Line(int _x1, int _y1, int _x2, int _y2)
+Line::Line(int x1, int y1, int x2, int y2)
 {
-	//	std::cout << "LINE" << std::endl;
-	
-	a = new Point(_x1, _y1);
-	b = new Point(_x2, _y2);	
-
-	//	std::cout << "LINE" << std::endl;
+	// Order a and b such that a.x > b.x
+	if( x1 > x2 )
+	{
+		a = new Point(x1, y1);
+		b = new Point(x2, y2);
+	}
+	else
+	{
+		b = new Point(x1, y1);
+		a = new Point(x2, y2);
+	}
 	
 	// Change ID
 	static int id_counter = 0;
@@ -81,11 +86,18 @@ void Line::distance()
 	//	std::cout << "DISTANCE" << std::endl;
 	
 	// First find the intesection of this line and the sweep line:
-	double xi = ( y_intercept - center_line->y_intercept ) / ( center_line->m - m );
-	double yi = m*xi + y_intercept;
+	double xi;
+	double yi;
+	center_intercept( xi, yi );
 
 	// Now find the distance between these two lines:
 	dist = sqrt( pow(center->x - xi, 2.0) + pow(center->y - yi,2.0) );
 
 	theta_cache = center->theta;
 }	
+
+void Line::center_intercept(double &xi, double &yi)
+{
+	xi = ( y_intercept - center_line->y_intercept ) / ( center_line->m - m );
+	yi = m*xi + y_intercept;
+}
