@@ -23,6 +23,7 @@ class Line: public Geometry
 	
 	Line();
 	Line(int _x1, int _y1, int _x2, int _y2);
+	~Line();
 	virtual void print();
     virtual double value();
 
@@ -35,6 +36,6 @@ class Line: public Geometry
 // This global needs to be visible to classes:
 extern Point * center;
 extern Line * center_line;
-
+extern double atomic;
 
 #endif

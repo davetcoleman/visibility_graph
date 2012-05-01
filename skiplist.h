@@ -21,9 +21,6 @@ template <class T>
 class skiplist{
    	// used for testing
  public:
-	double find_op;
-	double add_op;
-    double remove_op;
 	int maxLevel;
 	
  private:
@@ -83,11 +80,6 @@ class skiplist{
 		root = NULL;
 		maxLevel = 0;
 
-		// for testing
-		find_op = 0;
-		add_op = 0;
-		remove_op = 0; 
-		
 		srand ( time(NULL) ); // seed the random generator
 	}
 	// -----------------------------------------------------------------------------------
@@ -113,7 +105,7 @@ class skiplist{
 
 			for(int l = maxLevel; l >= 0; --l)
 			{
-				add_op += 1;
+				atomic += 1;
 				// change the root to the new value
 				n->data = data;
 				n = n->below;
@@ -147,11 +139,11 @@ class skiplist{
 		// Loop down through all levels
 		for(int l = maxLevel; l >= 0; --l)
 		{
-			add_op += 1;
+			atomic += 1;
 			// move forward until we hit a value greater than ours
 			while( i->next != NULL )
 			{
-				add_op += 1;
+				atomic += 1;
 				if( i->next->data->value() > data->value() ) // insert before i.next
 				{
 					break;
@@ -195,11 +187,11 @@ class skiplist{
 
 		for(int l = maxLevel; l >= 0; --l)
 		{
-			find_op += 1;
+			atomic += 1;
 			// move forward until we hit a value greater than ours
 			while( i->next != NULL )
 			{
-				find_op += 1;
+				atomic += 1;
 				if(  i->next ->data->value() > x ) // x is not found on this level
 				{
 					break;
@@ -232,7 +224,7 @@ class skiplist{
 			// Get level 0 of root
 			for(int l = root->level; l > 0; --l)
 			{
-				remove_op += 1;
+				atomic += 1;
 				//cout << "Level " << l << endl;
 				i = i->below;
 			}
@@ -252,7 +244,7 @@ class skiplist{
 
 			for(int l = maxLevel; l >= 0; --l)
 			{
-				remove_op += 1;
+				atomic += 1;
 				// change the root to the new value
 				n->data = nextNode->data;
 
@@ -274,11 +266,11 @@ class skiplist{
 		
 		for(int l = maxLevel; l >= 0; --l)
 		{
-			remove_op += 1;
+			atomic += 1;
 			// move forward until we hit a value greater than ours
 			while( i->next != NULL )
 			{
-				remove_op += 1;
+				atomic += 1;
 				// remove this one, confirmed by id
 			    if( i->next->data->value() == x && i->next->data->id == id ) 
 				{
@@ -334,7 +326,7 @@ class skiplist{
 		// Get level 0 of root
 		for(int l = root->level; l > 0; --l)
 		{
-			remove_op += 1;
+			atomic += 1;
 			i = i->below;
 		}
 
@@ -353,7 +345,7 @@ class skiplist{
 
 		for(int l = maxLevel; l >= 0; --l)
 		{
-			remove_op += 1;
+			atomic += 1;
 			// change the root to the new value
 			n->data = nextNode->data;
 			

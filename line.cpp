@@ -2,6 +2,7 @@
 
 Point * center;
 Line * center_line;
+double atomic;
 
 using namespace std;
 
@@ -42,6 +43,11 @@ Line::Line(int x1, int y1, int x2, int y2)
 	//distance();
 	
 	//	cout << "END LINE \n" << endl;	
+}
+Line::~Line()
+{
+	//delete a;
+	//delete b;
 }
 void Line::print()
 {
