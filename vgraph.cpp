@@ -1,11 +1,9 @@
-#include "CImg.h"// Include CImg library header.
 #include <iostream>
 #include "line.h"
 #include "point.h"
 #include "skiplist.h"
 #include <cmath>
 
-using namespace cimg_library;
 using namespace std;
 
 const unsigned char WHITE[] = { 255, 255, 255 };
@@ -30,7 +28,7 @@ int main()
 {
 	cout << endl << endl << "Visibility Graph by Dave Coleman -------------------- " << endl << endl;
 
-	for( double order = 4; order < 6; order += 0.5 )
+	for( double order = 1; order < 6; order += 0.5 )
 	{
 		vgraph(order);
 	}
@@ -45,12 +43,6 @@ void vgraph(double order)
 	// Atomic operation counter
 	atomic = 0;
 	
-	// Graphics:
-	bool visual = false;
-	bool live = false;
-
-	CImg<unsigned char> img(screen_size,screen_size,1,3,20);
-	CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen
 	
 	// Line segments:	
 	int size = pow(10.0, order);
@@ -157,16 +149,7 @@ void vgraph(double order)
 		center->parentLine = segs[center_id];
 		
 		// Draw sweeper:
-		//img.draw_line( center->x, center->y, center->x+200, center->y, RED);
-		if(visual)
-			img.draw_circle( center->x, center->y, 6, RED);
 
-		/*cout << "LINE ID " << center_id << " ";
-		  if(isPointA)
-		  cout << "A" << endl;
-		  else 
-		  cout << "B" << endl;
-		*/
 		
 		// Datastructures:
 		skiplist <Point*> angleList;		
@@ -188,14 +171,8 @@ void vgraph(double order)
 			l->visited = false;
 			l->visitedStartPoint = false;
 
-			if(visual)
-				img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, WHITE);
-
 			if( !(i == center_id && isPointA) ) // point is not line A
 			{
-				if(visual)
-					img.draw_circle(l->a->x, l->a->y, 2, WHITE);
-
 				// Calculate the angle from center line:
 				l->a->theta = vectorsAngle( l->a->x, l->a->y, center->x, center->y );
 
@@ -208,9 +185,6 @@ void vgraph(double order)
 
 			if( !(i == center_id && isPointA == false) ) // point is not line B
 			{
-				if(visual)
-					img.draw_circle(l->b->x, l->b->y, 2, WHITE);		
-
 				// Calculate the angle from center line:
 				l->b->theta = vectorsAngle( l->b->x, l->b->y, center->x, center->y );
 
@@ -263,16 +237,11 @@ void vgraph(double order)
 						// Mark as opened, somewhere on line
 						l->visited = true;
 			
-						// Visualize:
-						if(visual)
-							img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, GREEN);
 					}
 				}
 			}
 		}
 
-		if(live)
-			disp.display(img);
    		
 		//cout << "Edge List:";
 		//edgeList.printAll();
@@ -323,21 +292,13 @@ void vgraph(double order)
 				}
 			
 				// check if its first in the edge list. if it is, its VISIBLE
-				if( edgeList.isRoot( l->id ) )
-				{
-					//cout << "Drawing Line" << endl;
 
-					if(visual)
-						img.draw_line( center->x, center->y, p->x, p->y, BLUE );
-				}
 
 				// remove
 				//cout << "Value: " << l->value() << " " << l->id << endl;
 			
 				edgeList.remove( l->value(), l->id );
 
-				if(visual)
-					img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, WHITE);
 			}
 			else // add it to edge list
 			{
@@ -351,19 +312,7 @@ void vgraph(double order)
 				edgeList.add( l );
 
 				// check if its first in the edge list. if it is, its VISIBLE
-				if( edgeList.isRoot( l->id ) )
-				{
-					//cout << "Drawing Line" << endl;
-					if(visual)
-						img.draw_line( center->x, center->y, p->x, p->y, BLUE );
-				}
-
-				if(visual)
-					img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, GREEN);
 			}
-
-			if(visual)
-				img.draw_circle(p->x, p->y, 5, GREY);
 
 			//debug
 			//cout << "Edge List:";
@@ -371,53 +320,17 @@ void vgraph(double order)
 			//angleList.printAll();
 			//cout << endl << endl;
 		
-			if(live)
-			{
-				disp.display(img);
-				//usleep(1*1000);
-				//sleep(1);
-			}
 		}
 		//cout << "breaking" << endl;
 		//break;
-		if(live)
-		{
-			//usleep(1*1000);
-			disp.display(img);
-		}
+
 		//break;
 		//img.fill(20);
 		//cout << outer << endl;
 	}
 
-	if(visual)
-	{
-		// Redraw obstacle lines just for fun:
-		for(int i = 0; i < seg; ++i)
-		{
-			l = segs[i];
-	
-			img.draw_line(l->a->x, l->a->y, l->b->x, l->b->y, WHITE);
-			img.draw_circle(l->a->x, l->a->y, 2, WHITE);
-			img.draw_circle(l->b->x, l->b->y, 2, WHITE);				
-		}
-		disp.display(img);	
-	
-
-		img.save("result.png"); // save the image
-	}
-
 	cout << seg << "," << atomic << endl;
 
-	if(visual)
-	{
-		// Show window until user input:	
-		while (!disp.is_closed()) {
-			if (disp.is_keyESC() )
-				break;
-			disp.wait();
-		}
-	}
 
 	// Garabage collect
 	//delete [] segs;
