@@ -375,13 +375,11 @@ class skiplist{
 	// -----------------------------------------------------------------------------------
 	bool isRoot(int id)
 	{
-		std::cout << "is root " << std::endl;
 
 		if( !root ) // there is no root!
 		{
 			std::cout << "there is no root!" << std::endl;
 			return false;
-
 		}
 	    return (root->data->id == id);
 	}

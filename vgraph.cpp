@@ -40,20 +40,21 @@ int main()
 
 
 	// Line segments:
-	int seg = 4;
+	int seg = 3;
 	Line segs[] =
 		{  
 			//			Line(280,300,330,120), // first
 			Line(450,150,280,330), // second
 			Line(400,150,401,190), // third, later		   
-			Line(400,400,450,200), // far right
+			//Line(400,400,450,200), // far right
 			//			Line(350,350,350,450),
-			//			Line(10,200,100,215),
+			Line(10,200,100,215),
 			//			Line(50,50,50,100),
-			Line(200,450,300,450)
+			//Line(200,450,300,450)
 		};
 
-	for(int outer = 0; outer < 2*seg; ++outer)
+	for(int outer = 3; outer < 6; ++outer)
+		//	for(int outer = 0; outer < 2*seg; ++outer)		
 	{
 		
 		// Move center to new point
@@ -192,8 +193,8 @@ int main()
 		
 		//sleep(1);
 		usleep(500*1000);
-		
 		for(int i = 0; i < 2*seg - 1; ++i)
+			//		for(int i = 2; i < 5; ++i)				   
 		{
 			cout << "SWEEP VERTEX " << i << endl;
 			
@@ -284,6 +285,8 @@ int main()
 		//break;
 		cout << "\n\n\n --------------- STARTING NEW SWEEP ------------------ \n\n\n";
 		sleep(5);
+break;
+		img.fill(20);
 	}
 
 	// Show window until user input:
