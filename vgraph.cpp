@@ -15,6 +15,7 @@ const unsigned char RED[] = { 255, 0, 0 };
 const unsigned char GREEN[] = { 0, 255, 0 };
 const unsigned char BLUE[] = { 0, 0, 255};
 const int screen_size = 800;
+//const int screen_size = 400;
 
 //-------------------------------------------------------------------------------
 //  Prototypes
@@ -30,7 +31,7 @@ int main()
 {
 	cout << endl << endl << "Visibility Graph by Dave Coleman -------------------- " << endl << endl;
 
-	for( double order = 4; order < 6; order += 0.5 )
+	for( double order = 1; order < 2; order += 0.5 )
 	{
 		vgraph(order);
 	}
@@ -44,10 +45,11 @@ void vgraph(double order)
 
 	// Atomic operation counter
 	atomic = 0;
+	double total_atomic_space = 0;
 	
 	// Graphics:
-	bool visual = false;
-	bool live = false;
+	bool visual = true;
+	bool live = true;
 
 	CImg<unsigned char> img(screen_size,screen_size,1,3,20);
 	CImgDisplay disp(img, "Visibility Graph");      // Display the modified image on the screen
@@ -127,6 +129,7 @@ void vgraph(double order)
    	for(int outer = 0; outer < 2*seg; ++outer)
 	{
 		++atomic;
+		atomic_space = 0;
 		
 		// First or second number on each line?
 		center_id = outer / 2;
@@ -224,7 +227,9 @@ void vgraph(double order)
 			//cout << endl;
 		}
 		
-		
+		//disp.display(img);
+		//img.save("result.png"); // save the image		
+		//break;	
 		// Test SkipList
 		//cout << "Angle List - points ordered CC from base line";
 		//angleList.printAll();
@@ -284,6 +289,10 @@ void vgraph(double order)
    		for(int i = 0; i < 2*seg - 1; ++i)
 		{
 			++atomic;
+			// get max atomic space
+			if( total_atomic_space < atomic_space )
+				total_atomic_space = atomic_space;
+		
 			
 			//cout << "\n\n\n --------------- STARTING NEW SWEEP ------------------ \n\n\n";
 			
@@ -385,7 +394,7 @@ void vgraph(double order)
 			//usleep(1*1000);
 			disp.display(img);
 		}
-		//break;
+
 		//img.fill(20);
 		//cout << outer << endl;
 	}
@@ -407,7 +416,7 @@ void vgraph(double order)
 		img.save("result.png"); // save the image
 	}
 
-	cout << seg << "," << atomic << endl;
+	cout << seg << "," << total_atomic_space << endl;
 
 	if(visual)
 	{

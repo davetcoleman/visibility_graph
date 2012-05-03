@@ -3,6 +3,7 @@
 Point * center;
 Line * center_line;
 double atomic;
+double atomic_space;
 
 using namespace std;
 
@@ -59,7 +60,7 @@ double Line::value()
 	// calculate distance from midpoint at a given theta,
 	// with resepct to the baseline
 
-	if( theta_cache != center->theta ) // check if our cached version is still fresh enough
+	//if( theta_cache != center->theta ) // check if our cached version is still fresh enough
 	{
 		//cout << "Recalculaing distance for line " << id << endl;
 		distance();

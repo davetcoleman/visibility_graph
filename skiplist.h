@@ -68,6 +68,9 @@ class skiplist{
 			newNode->below = createNode( level - 1, height, data);
 			newNode->height = height;
 			newNode->data = data;
+
+			atomic_space++;
+			
 			return newNode;
 		}
 	}	
@@ -128,6 +131,8 @@ class skiplist{
 			newRoot->below = root;
 			newRoot->level = maxLevel;
 			root = newRoot;
+
+			atomic_space++;			
 		}
 
 		// Create the new node
@@ -225,6 +230,7 @@ class skiplist{
 			for(int l = root->level; l > 0; --l)
 			{
 				atomic += 1;
+				atomic_space --;
 				//cout << "Level " << l << endl;
 				i = i->below;
 			}
@@ -275,6 +281,7 @@ class skiplist{
 			    if( i->next->data->value() == x && i->next->data->id == id ) 
 				{
 					found = true;
+					atomic_space --;
 					
 					// pass through the pointer if exists
 					if( i->next )
@@ -327,6 +334,7 @@ class skiplist{
 		for(int l = root->level; l > 0; --l)
 		{
 			atomic += 1;
+						
 			i = i->below;
 		}
 
@@ -346,6 +354,7 @@ class skiplist{
 		for(int l = maxLevel; l >= 0; --l)
 		{
 			atomic += 1;
+			atomic_space --;
 			// change the root to the new value
 			n->data = nextNode->data;
 			

@@ -37,5 +37,6 @@ class Line: public Geometry
 extern Point * center;
 extern Line * center_line;
 extern double atomic;
+extern double atomic_space;
 
 #endif
